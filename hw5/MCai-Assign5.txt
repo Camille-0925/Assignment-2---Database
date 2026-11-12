@@ -1,0 +1,155 @@
+1.
+╭───────────────────────┬────────────────╮
+│    itemDescription    │ quantityOnHand │
+╞═══════════════════════╪════════════════╡
+│ bottle of antibiotics │            100 │
+╰───────────────────────┴────────────────╯
+This query searches the item table for the row whose itemDescription contains the word “antibiotic”, and returns its quantityOnHand, which represents how many antibiotics are available.
+
+2.
+╭───────────────╮
+│ volunteerName │
+╞═══════════════╡
+│ Gene Lewin    │
+╰───────────────╯
+This query searches the volunteer table and keeps volunteerName of the volunteers, whoese telephone number does not begin with "2" and whose last name is not 'Jones'(by using NOT LIKE). Volunteers with no phone number on record (NULL) are not included, since they do not have a phone number to check.
+
+3.
+╭───────────────╮
+│ volunteerName │
+╞═══════════════╡
+│ George Brewer │
+╰───────────────╯
+This query links four tables together to find out which volunteers are working on transporting tasks. 
+First, it matches each volunteer to their task assignments by connecting rows in the volunteer and assignment tables that share the same volunteer ID. Next, it matches each assignment to the task it refers to by connecting rows with the same task code. Then, it matches each task to its task type by connecting rows with the same task type ID, so the type name (such as "packing" or "transporting") becomes available. Finally, it keeps only the rows where the task type name is "transporting" and displays the names of those volunteers. 
+Only George Brewer is returned, because he is the only volunteer assigned to a transporting task; the other transporting task has no volunteers assigned yet.
+
+4.
+╭────────────────────────────────╮
+│        taskDescription         │
+╞════════════════════════════════╡
+│ Prepare 100 food packages      │
+│ Take packages to the warehouse │
+╰────────────────────────────────╯
+This query works in two steps. 
+First, the subquery inside the parentheses looks at the assignment table and collects the task code of every task that has been assigned to at least one volunteer. 
+Next, the outer query goes through the task table and keeps only the tasks whose task code is NOT IN that list, meaning no volunteer has been assigned to them, and displays their descriptions. Tasks 104 and 110 are returned because neither appears in the assignment table. Task 107 is not included because it has been assigned to George Brewer, even though its start and end times are still empty.
+
+5.
+╭─────────────────╮
+│ packageTypeName │
+╞═════════════════╡
+│ food and water  │
+╰─────────────────╯
+This query joins package_type, package, package_contents and item by matching their shared IDs, so each package type is connected to the items inside its packages. It keeps only rows where the item description contains "bottle", and GROUP BY combines rows with the same type name so each type appears only once.
+The only packed bottle item is the 1 gallon water bottle, and all five packages containing it are "food and water", so that is the only result.
+
+6.
+╭───────────────────────╮
+│    itemDescription    │
+╞═══════════════════════╡
+│ bottle of antibiotics │
+│ bottle of aspirin     │
+│ flashlight            │
+│ pack of bandages      │
+╰───────────────────────╯
+The subquery first collects the item ID of every item that appears in the package_contents table, meaning items that have been put into at least one package. The outer query then keeps only the items in the item table whose ID is NOT IN that list and displays their descriptions.
+These four items have never been included in any package, so they are the only ones returned.
+
+7.
+╭────────────────────────────────╮
+│        taskDescription         │
+╞════════════════════════════════╡
+│ Prepare 5,000 packages         │
+│ Prepare 20 children's packages │
+│ Prepare 100 water packages     │
+│ Prepare 20 children's packages │
+╰────────────────────────────────╯
+This query joins task, assignment and volunteer by matching task codes and volunteer IDs, so each task is connected to the volunteers assigned to it. It keeps only rows where the volunteer's address ends with "NJ", and GROUP BY task code makes each task appear only once, even if several New Jersey volunteers work on it.
+Four tasks are returned. "Prepare 20 children's packages" appears twice because tasks 103 and 108 are two different tasks that share the same description.
+
+8.
+╭───────────────╮
+│ volunteerName │
+╞═══════════════╡
+│ Joan Simmons  │
+│ Chris Jordan  │
+╰───────────────╯
+This query joins volunteer and assignment by matching volunteer IDs, so each volunteer is connected to the start time of each of their assignments. It keeps only assignments whose start date and time falls BETWEEN January 1, 2021 and the last second of June 30, 2021, and displays the names of those volunteers.
+Joan Simmons and Chris Jordan are returned because both started task 103 on May 1, 2021. The end point is written as '2021-06-30 23:59:59' so that any assignment starting during June 30 would still be included.
+
+9.
+╭───────────────╮
+│ volunteerName │
+╞═══════════════╡
+│ Julie White   │
+│ Gerry Banks   │
+╰───────────────╯
+This query joins volunteer, assignment, package, package_contents and item by matching their shared IDs, so each volunteer is connected to the items inside the packages produced by their tasks. It keeps only rows where the item description contains "spam", and GROUP BY volunteer ID makes each volunteer appear only once.
+Spam was packed only in packages 1 and 2, which were both produced by task 102 ("Prepare 5,000 packages"). The volunteers assigned to that task are Julie White and Gerry Banks.
+
+10.
+╭─────────────────╮
+│ itemDescription │
+╞═════════════════╡
+│ Baby formula    │
+╰─────────────────╯
+This query joins item and package_contents by matching item IDs, so each item is connected to the quantity of it placed in each package. For every item–package pair, it multiplies the item's value by its quantity in that package to get the item's total value in that package, keeps only the pairs where this total is exactly 100, and displays the item descriptions.
+Baby formula is returned because package 3 contains 10 of them at $10 each. The tent is not returned even though its value is $100, because package 4 contains 2 tents, for a total of $200.
+
+11.
+╭────────────────┬────────────╮
+│ taskStatusName │ volunteers │
+╞════════════════╪════════════╡
+│ open           │          4 │
+│ closed         │          3 │
+│ ongoing        │          2 │
+│ pending        │          1 │
+╰────────────────┴────────────╯
+This query joins assignment, task and task_status by matching task codes and status IDs, so each assignment is connected to the status of its task. GROUP BY splits the rows into one group per status, COUNT(DISTINCT volunteerId) counts how many different volunteers are in each group, and ORDER BY sorts the statuses from the highest count to the lowest.
+DISTINCT is used so that a volunteer with several tasks of the same status is counted only once. For example, Chris Jordan is assigned to two closed tasks (103 and 108) but counts as one volunteer, so "closed" has 3 volunteers rather than 4.
+
+12.
+╭──────────┬─────────────╮
+│ taskCode │ totalWeight │
+╞══════════╪═════════════╡
+│      106 │       308.0 │
+╰──────────┴─────────────╯
+This query uses only the package table. GROUP BY puts all packages produced by the same task into one group, and SUM adds up the weights of the packages in each group to get each task's total package weight. ORDER BY sorts the tasks from heaviest to lightest total, and LIMIT 1 keeps only the first row, which gives the heaviest set without needing a subquery.
+Task 106 is returned with a total of 308 (103 + 102 + 103). Task 102 contains the single heaviest package (132), but its packages only add up to 252, so it is not the heaviest set.
+
+13.
+╭─────────────────╮
+│ nonPackingTasks │
+╞═════════════════╡
+│               3 │
+╰─────────────────╯
+This query joins task and task_type by matching task type IDs, so each task is connected to its type name. It keeps only the tasks whose type name is not equal to "packing", and COUNT returns how many such tasks there are.
+Three tasks are counted: task 101 (recurring) and tasks 107 and 110 (transporting).
+
+14.
+╭─────────────────╮
+│ itemDescription │
+╞═════════════════╡
+│ can of spam     │
+│ dried fruit     │
+│ tent            │
+│ men's coat      │
+│ women's coat    │
+│ sleeping bag    │
+╰─────────────────╯
+This query joins item, package_contents, package and assignment by matching their shared IDs, so each packed item is connected to the volunteers assigned to the tasks that produced its packages. Because these are regular JOINs, items that were never packed are left out automatically. GROUP BY puts the rows for each item into one group, and HAVING keeps only the items where the number of different volunteers is fewer than 3.
+COUNT(DISTINCT) is needed because the same volunteer can appear several times for one item when that item is in more than one package from the same task. For example, can of spam is in two packages from task 102, which has two volunteers, so it produces four rows but was touched by only two people. The 1 gallon water bottle (3 volunteers) and Baby formula (4 volunteers) are excluded.
+
+15.
+╭───────────┬──────────────╮
+│ packageId │ packageValue │
+╞═══════════╪══════════════╡
+│         6 │        150.0 │
+│         2 │        151.0 │
+│         4 │        350.0 │
+│        10 │        750.0 │
+│         5 │       1420.0 │
+╰───────────┴──────────────╯
+This query joins package_contents and item by matching item IDs, so each item in a package is connected to its value. For every package, it multiplies each item's value by its quantity and uses SUM to add these together, giving the package's total value. HAVING keeps only the packages whose total value is greater than 100, and ORDER BY sorts them from the lowest value to the highest.
+Five packages are returned. Package 3 is not included because its total value is exactly 100, which is not more than 100.
